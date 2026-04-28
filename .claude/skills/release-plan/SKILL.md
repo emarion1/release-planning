@@ -37,11 +37,48 @@ Each feature in features-ready.json includes:
                               priority 25%, inverse complexity 15%
   priorityScoreBreakdown    — per-factor contribution in points
   isReady (bool)            — true if label strat-creator-rubric-pass present
-                              (strategy reviewed and approved by Eder's rubric)
+                              (strategy reviewed and scored ≥6 with no zeros)
   bigRock / bigRockTier     — associated big rock name and tier (1/2/3)
   scheduleCategory          — committed / planned / unscheduled
   sizeMethod                — jira_provided or auto_estimated
   blockedBy                 — list of blocking issue keys
+
+  rubricScored (bool)       — true if dimension scores are available from
+                              strat-pipeline-data
+  rubricFeasibility (0-2)   — feasibility/NFR/risk coverage (maps to DoR:
+                              Risks & Assumptions, Feature Refinement doc)
+  rubricTestability (0-2)   — AC quality (maps to DoR: Acceptance Criteria
+                              present & testable; 2 = specific + edge cases)
+  rubricScope (0-2)         — scope definition (maps to DoR: Feature Refinement
+                              doc completeness, Out of Scope section)
+  rubricArchitecture (0-2)  — arch review completeness (maps to DoR: Arch
+                              Review check; 2 = complete or explicitly waived)
+  rubricTotal (0-8)         — sum of all four dimensions
+  rubricRecommendation      — approve (>=6, no zeros) / revise (5 or has zero)
+                              / reject (very low score)
+  dorWarnings (list)        — soft DoR warnings derived from rubric dimensions:
+                              "AC may need refinement (Testability < 2)"
+                              "Arch review may be incomplete (Architecture < 2)"
+                              "Feasibility/risks need attention (Feasibility < 2)"
+
+### DoR Coverage Summary
+
+The rubric dimension scores map to the Definition of Ready as follows:
+
+  Rubric pass (total>=6, no zeros) -> evidence for:
+    - Feature Refinement doc: scope defined (Scope), risks noted (Feasibility),
+      AC drafted (Testability), arch considered (Architecture)
+    - Acceptance Criteria present (Testability >= 1)
+    - Arch review initiated (Architecture >= 1)
+
+  NOT covered by rubric (requires team-tracker or human check):
+    - Source RFE linked, Products field set, Target Version set
+    - Phasing Pattern / Confidence / Rationale / Driver
+    - Docs Impact field
+
+  Note: Testability = 2 is rare (12% of scored features) and Architecture = 1
+  is the most common weak dimension. dorWarnings are informational — the rubric
+  pass is the gate, not the individual dimension thresholds.
 
 ## Workflow
 
@@ -68,6 +105,10 @@ Count buckets at each level. Identify the highest-risk events.
 
 **Not-ready features in plan**: features where isReady=false but scheduled.
   These should be refined before commitment. List key, summary, scheduleCategory.
+
+**DoR soft warnings**: features where isReady=true but dorWarnings is non-empty.
+  These are approved by the rubric but have specific quality gaps worth flagging.
+  Group by warning type. Focus attention on Tier-1 big rock features with warnings.
 
 **Blocked features**: features where blockedBy is non-empty.
   Check if the blocker is scheduled before the blocked feature.
@@ -131,7 +172,8 @@ Write structured JSON:
   }
 
 Each feature entry: key, summary, points, sizeMethod, priorityScore,
-  bigRock, bigRockTier, isReady, scheduleCategory, scheduledTo, blockedBy.
+  bigRock, bigRockTier, isReady, scheduleCategory, scheduledTo, blockedBy,
+  rubricTotal, rubricRecommendation, dorWarnings.
 
 ### Step 6: Confirm Completion
 
@@ -139,7 +181,7 @@ Output:
   Release plan complete.
     Releases: [N] (EA1/EA2/GA each)
     Features scheduled: [N] / unscheduled: [N]
-    Ready to plan: [N] / not ready: [N]
+    Ready to plan: [N] / not ready: [N] / DoR warnings: [N]
     Capacity risks: [N] events at aggressive or over_capacity
     Blocked features: [N]
     Output: output/release-plan.md, output/release-plan.json

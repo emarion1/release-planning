@@ -42,6 +42,7 @@ FEATURE_DIR   = os.environ.get("FEATURE_DIR",   "data/feature-traffic/RHAISTRAT/
 SUPPLEMENTAL  = os.environ.get("SUPPLEMENTAL",  "data/supplemental.json")
 PLAN_RANKING  = os.environ.get("PLAN_RANKING",  "data/plan-ranking.json")
 BIG_ROCKS     = os.environ.get("BIG_ROCKS",     "data/big-rocks.json")
+RUBRIC_SCORES = os.environ.get("RUBRIC_SCORES", "data/rubric-scores.json")
 OUTPUT        = os.environ.get("FEATURES_OUTPUT","data/features-ready.json")
 TARGET_PRODUCT = os.environ.get("TARGET_PRODUCT", "RHOAI")
 
@@ -142,6 +143,15 @@ def infer_product(feat_summary, detail, supp):
     return "RHOAI"
 
 
+def load_rubric_scores(path):
+    """Return dict of feature key -> rubric score dict, or {} if file missing."""
+    if not os.path.exists(path):
+        print(f"WARNING: rubric-scores file not found at {path}, rubric scoring disabled")
+        return {}
+    with open(path) as f:
+        return json.load(f)
+
+
 def main():
     with open(FEATURE_INDEX) as f:
         index = json.load(f)
@@ -151,6 +161,7 @@ def main():
         plan_ranking = json.load(f)
 
     label_map, _ = load_big_rocks(BIG_ROCKS)
+    rubric_scores = load_rubric_scores(RUBRIC_SCORES)
 
     capacity_model = load_capacity_model()
     capacity = capacity_model_to_legacy_format(capacity_model)
@@ -233,6 +244,25 @@ def main():
             big_rock=big_rock,
         )
 
+        # Rubric dimension scores
+        rubric = rubric_scores.get(key, {})
+        rubric_feasibility    = rubric.get("feasibility")
+        rubric_testability    = rubric.get("testability")
+        rubric_scope          = rubric.get("scope")
+        rubric_architecture   = rubric.get("architecture")
+        rubric_total          = rubric.get("total")
+        rubric_recommendation = rubric.get("recommendation")
+
+        # DoR soft warnings derived from rubric dimensions (only when rubric data exists)
+        dor_warnings = []
+        if rubric:
+            if rubric_testability is not None and rubric_testability < 2:
+                dor_warnings.append("AC may need refinement (Testability < 2)")
+            if rubric_architecture is not None and rubric_architecture < 2:
+                dor_warnings.append("Arch review may be incomplete (Architecture < 2)")
+            if rubric_feasibility is not None and rubric_feasibility < 2:
+                dor_warnings.append("Feasibility/risks need attention (Feasibility < 2)")
+
         features_ready.append({
             "key": key,
             "summary": feat_summary["summary"],
@@ -268,6 +298,15 @@ def main():
             # Priority score
             "priorityScore": priority_score,
             "priorityScoreBreakdown": score_breakdown,
+            # Rubric dimension scores
+            "rubricScored": bool(rubric),
+            "rubricFeasibility":    rubric_feasibility,
+            "rubricTestability":    rubric_testability,
+            "rubricScope":          rubric_scope,
+            "rubricArchitecture":   rubric_architecture,
+            "rubricTotal":          rubric_total,
+            "rubricRecommendation": rubric_recommendation,
+            "dorWarnings":          dor_warnings,
         })
 
     output_data = {
@@ -289,6 +328,9 @@ def main():
     blocked     = sum(1 for f in features_ready if f["blockedBy"])
     ready       = sum(1 for f in features_ready if f["isReady"])
     with_rock   = sum(1 for f in features_ready if f["bigRock"])
+    rubric_scored = sum(1 for f in features_ready if f["rubricScored"])
+    rubric_pass   = sum(1 for f in features_ready if f["rubricRecommendation"] == "approve")
+    with_warnings = sum(1 for f in features_ready if f["dorWarnings"])
 
     print(f"Target product:   {TARGET_PRODUCT}")
     print(f"Features:         {len(features_ready)} included, {skipped} skipped (other products)")
@@ -297,6 +339,8 @@ def main():
     print(f"  Blocked: {blocked}")
     print(f"  Ready to plan (strat-creator-rubric-pass): {ready} / {len(features_ready)}")
     print(f"  Linked to a big rock: {with_rock} / {len(features_ready)}")
+    print(f"  Rubric scored: {rubric_scored} / {len(features_ready)}")
+    print(f"    Passing (approve): {rubric_pass}  With DoR warnings: {with_warnings}")
     print(f"Wrote {OUTPUT}")
 
 
