@@ -1,6 +1,6 @@
 {
   "version": "3.5",
-  "description": "Big rocks for RHOAI 3.5 release planning. Features are linked via Jira labels.",
+  "description": "Big rocks for RHOAI 3.5 release planning. Features are linked via Jira parent/child hierarchy (outcomeKeys). Labels are used as fallback for big rocks with TBD outcomes.",
   "bigRocks": [
     {
       "priority": 1,
@@ -8,6 +8,7 @@
       "name": "MaaS",
       "tier": 1,
       "tierScore": 1.0,
+      "outcomeKeys": ["RHAISTRAT-1513"],
       "labels": ["MaaS", "maas", "mlserving", "inference-gateway"]
     },
     {
@@ -16,6 +17,7 @@
       "name": "Gen AI Studio",
       "tier": 1,
       "tierScore": 1.0,
+      "outcomeKeys": ["RHAISTRAT-1312"],
       "labels": ["ai-studio"]
     },
     {
@@ -24,6 +26,7 @@
       "name": "Bring Your Own Agent",
       "tier": 1,
       "tierScore": 1.0,
+      "outcomeKeys": [],
       "labels": ["agentic", "kagenti", "trustworthy-agents"]
     },
     {
@@ -32,6 +35,7 @@
       "name": "Tool Calling",
       "tier": 1,
       "tierScore": 1.0,
+      "outcomeKeys": [],
       "labels": ["tool-calling"]
     },
     {
@@ -40,6 +44,7 @@
       "name": "llm-d / xKS",
       "tier": 2,
       "tierScore": 0.6,
+      "outcomeKeys": ["RHAISTRAT-1515", "RHAISTRAT-1403"],
       "labels": ["llm-d"]
     },
     {
@@ -48,6 +53,7 @@
       "name": "Upgrade Support",
       "tier": 2,
       "tierScore": 0.6,
+      "outcomeKeys": ["RHAISTRAT-1480"],
       "labels": []
     },
     {
@@ -56,6 +62,7 @@
       "name": "Eval Hub",
       "tier": 2,
       "tierScore": 0.6,
+      "outcomeKeys": ["RHAISTRAT-1498"],
       "labels": ["evalhub-1", "evalhub-2"]
     },
     {
@@ -64,6 +71,7 @@
       "name": "AI Hub incl MCP",
       "tier": 2,
       "tierScore": 0.6,
+      "outcomeKeys": ["RHAISTRAT-1339"],
       "labels": ["ai-hub", "mcp", "mcp-catalog", "mcp-gateway", "mcp-registry"]
     },
     {
@@ -72,6 +80,7 @@
       "name": "Observability",
       "tier": 2,
       "tierScore": 0.6,
+      "outcomeKeys": ["RHAISTRAT-1517", "RHAISTRAT-1446"],
       "labels": ["observability", "observabilty"]
     },
     {
@@ -80,6 +89,7 @@
       "name": "Multitenancy",
       "tier": 2,
       "tierScore": 0.6,
+      "outcomeKeys": ["RHAISTRAT-1516", "RHAISTRAT-898"],
       "labels": []
     },
     {
@@ -88,6 +98,7 @@
       "name": "AutoRAG",
       "tier": 3,
       "tierScore": 0.2,
+      "outcomeKeys": ["RHAISTRAT-188"],
       "labels": ["autorag"]
     },
     {
@@ -96,6 +107,7 @@
       "name": "AI Safety",
       "tier": 3,
       "tierScore": 0.2,
+      "outcomeKeys": [],
       "labels": ["genai-guardrails", "guardrails"]
     },
     {
@@ -104,6 +116,7 @@
       "name": "vLLM Multimodal",
       "tier": 3,
       "tierScore": 0.2,
+      "outcomeKeys": [],
       "labels": ["vLLM", "vllm", "vision-transformers"]
     },
     {
@@ -112,6 +125,7 @@
       "name": "AutoML",
       "tier": 3,
       "tierScore": 0.2,
+      "outcomeKeys": [],
       "labels": []
     }
   ]

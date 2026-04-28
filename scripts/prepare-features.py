@@ -41,10 +41,11 @@ FEATURE_INDEX = os.environ.get("FEATURE_INDEX", "data/feature-traffic/RHAISTRAT/
 FEATURE_DIR   = os.environ.get("FEATURE_DIR",   "data/feature-traffic/RHAISTRAT/latest/features")
 SUPPLEMENTAL  = os.environ.get("SUPPLEMENTAL",  "data/supplemental.json")
 PLAN_RANKING  = os.environ.get("PLAN_RANKING",  "data/plan-ranking.json")
-BIG_ROCKS     = os.environ.get("BIG_ROCKS",     "data/big-rocks.json")
-RUBRIC_SCORES = os.environ.get("RUBRIC_SCORES", "data/rubric-scores.json")
-OUTPUT        = os.environ.get("FEATURES_OUTPUT","data/features-ready.json")
-TARGET_PRODUCT = os.environ.get("TARGET_PRODUCT", "RHOAI")
+BIG_ROCKS          = os.environ.get("BIG_ROCKS",          "data/big-rocks.json")
+BIG_ROCK_FEATURES  = os.environ.get("BIG_ROCK_FEATURES",  "data/big-rock-features.json")
+RUBRIC_SCORES      = os.environ.get("RUBRIC_SCORES",      "data/rubric-scores.json")
+OUTPUT             = os.environ.get("FEATURES_OUTPUT",    "data/features-ready.json")
+TARGET_PRODUCT     = os.environ.get("TARGET_PRODUCT",     "RHOAI")
 
 KNOWN_PRODUCTS = {"RHOAI", "RHAIIS", "RHELAI"}
 
@@ -143,6 +144,15 @@ def infer_product(feat_summary, detail, supp):
     return "RHOAI"
 
 
+def load_big_rock_features(path):
+    """Return dict of feature key -> big rock info from Jira hierarchy, or {} if missing."""
+    if not os.path.exists(path):
+        print(f"WARNING: big-rock-features file not found at {path}, using label fallback only")
+        return {}
+    with open(path) as f:
+        return json.load(f)
+
+
 def load_rubric_scores(path):
     """Return dict of feature key -> rubric score dict, or {} if file missing."""
     if not os.path.exists(path):
@@ -161,6 +171,7 @@ def main():
         plan_ranking = json.load(f)
 
     label_map, _ = load_big_rocks(BIG_ROCKS)
+    big_rock_features = load_big_rock_features(BIG_ROCK_FEATURES)
     rubric_scores = load_rubric_scores(RUBRIC_SCORES)
 
     capacity_model = load_capacity_model()
@@ -230,11 +241,22 @@ def main():
         labels = feat_summary.get("labels", detail.get("labels", []))
         is_ready = READINESS_LABEL in labels
 
-        # Big rock association
-        big_rock = match_big_rock(labels, label_map)
-        big_rock_name = big_rock["name"] if big_rock else None
-        big_rock_priority = big_rock["priority"] if big_rock else None
-        big_rock_tier = big_rock["tier"] if big_rock else None
+        # Big rock association — hierarchy (Jira parent) takes priority over labels
+        hierarchy_rock = big_rock_features.get(key)
+        if hierarchy_rock:
+            big_rock_name     = hierarchy_rock["bigRock"]
+            big_rock_priority = hierarchy_rock["bigRockPriority"]
+            big_rock_tier     = hierarchy_rock["bigRockTier"]
+            big_rock_tier_score = hierarchy_rock["bigRockTierScore"]
+            big_rock_source   = "hierarchy"
+            big_rock = {"name": big_rock_name, "priority": big_rock_priority,
+                        "tier": big_rock_tier, "tierScore": big_rock_tier_score}
+        else:
+            big_rock = match_big_rock(labels, label_map)
+            big_rock_name     = big_rock["name"] if big_rock else None
+            big_rock_priority = big_rock["priority"] if big_rock else None
+            big_rock_tier     = big_rock["tier"] if big_rock else None
+            big_rock_source   = "label" if big_rock else None
 
         # Priority score
         rank = plan_ranking.get(key, 9999)
@@ -295,6 +317,7 @@ def main():
             "bigRock": big_rock_name,
             "bigRockPriority": big_rock_priority,
             "bigRockTier": big_rock_tier,
+            "bigRockSource": big_rock_source,
             # Priority score
             "priorityScore": priority_score,
             "priorityScoreBreakdown": score_breakdown,
@@ -327,7 +350,9 @@ def main():
     jira_sized  = sum(1 for f in features_ready if f["sizeMethod"] == "jira_provided")
     blocked     = sum(1 for f in features_ready if f["blockedBy"])
     ready       = sum(1 for f in features_ready if f["isReady"])
-    with_rock   = sum(1 for f in features_ready if f["bigRock"])
+    with_rock        = sum(1 for f in features_ready if f["bigRock"])
+    rock_hierarchy   = sum(1 for f in features_ready if f["bigRockSource"] == "hierarchy")
+    rock_label       = sum(1 for f in features_ready if f["bigRockSource"] == "label")
     rubric_scored = sum(1 for f in features_ready if f["rubricScored"])
     rubric_pass   = sum(1 for f in features_ready if f["rubricRecommendation"] == "approve")
     with_warnings = sum(1 for f in features_ready if f["dorWarnings"])
@@ -338,7 +363,7 @@ def main():
     print(f"  Jira story points: {jira_sized}  Auto-sized: {len(features_ready) - jira_sized}")
     print(f"  Blocked: {blocked}")
     print(f"  Ready to plan (strat-creator-rubric-pass): {ready} / {len(features_ready)}")
-    print(f"  Linked to a big rock: {with_rock} / {len(features_ready)}")
+    print(f"  Linked to a big rock: {with_rock} / {len(features_ready)} (hierarchy: {rock_hierarchy}, label fallback: {rock_label})")
     print(f"  Rubric scored: {rubric_scored} / {len(features_ready)}")
     print(f"    Passing (approve): {rubric_pass}  With DoR warnings: {with_warnings}")
     print(f"Wrote {OUTPUT}")
