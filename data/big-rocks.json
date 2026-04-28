@@ -1,0 +1,118 @@
+{
+  "version": "3.5",
+  "description": "Big rocks for RHOAI 3.5 release planning. Features are linked via Jira labels.",
+  "bigRocks": [
+    {
+      "priority": 1,
+      "pillar": "Inference",
+      "name": "MaaS",
+      "tier": 1,
+      "tierScore": 1.0,
+      "labels": ["MaaS", "maas", "mlserving", "inference-gateway"]
+    },
+    {
+      "priority": 2,
+      "pillar": "Agents",
+      "name": "Gen AI Studio",
+      "tier": 1,
+      "tierScore": 1.0,
+      "labels": ["ai-studio"]
+    },
+    {
+      "priority": 3,
+      "pillar": "Agents",
+      "name": "Bring Your Own Agent",
+      "tier": 1,
+      "tierScore": 1.0,
+      "labels": ["agentic", "kagenti", "trustworthy-agents"]
+    },
+    {
+      "priority": 4,
+      "pillar": "Agents",
+      "name": "Tool Calling",
+      "tier": 1,
+      "tierScore": 1.0,
+      "labels": ["tool-calling"]
+    },
+    {
+      "priority": 5,
+      "pillar": "Inference",
+      "name": "llm-d / xKS",
+      "tier": 2,
+      "tierScore": 0.6,
+      "labels": ["llm-d"]
+    },
+    {
+      "priority": 6,
+      "pillar": "Platform",
+      "name": "Upgrade Support",
+      "tier": 2,
+      "tierScore": 0.6,
+      "labels": []
+    },
+    {
+      "priority": 7,
+      "pillar": "Data",
+      "name": "Eval Hub",
+      "tier": 2,
+      "tierScore": 0.6,
+      "labels": ["evalhub-1", "evalhub-2"]
+    },
+    {
+      "priority": 8,
+      "pillar": "Platform",
+      "name": "AI Hub incl MCP",
+      "tier": 2,
+      "tierScore": 0.6,
+      "labels": ["ai-hub", "mcp", "mcp-catalog", "mcp-gateway", "mcp-registry"]
+    },
+    {
+      "priority": 9,
+      "pillar": "Platform",
+      "name": "Observability",
+      "tier": 2,
+      "tierScore": 0.6,
+      "labels": ["observability", "observabilty"]
+    },
+    {
+      "priority": 10,
+      "pillar": "Platform",
+      "name": "Multitenancy",
+      "tier": 2,
+      "tierScore": 0.6,
+      "labels": []
+    },
+    {
+      "priority": 11,
+      "pillar": "Data",
+      "name": "AutoRAG",
+      "tier": 3,
+      "tierScore": 0.2,
+      "labels": ["autorag"]
+    },
+    {
+      "priority": 12,
+      "pillar": "Data",
+      "name": "AI Safety",
+      "tier": 3,
+      "tierScore": 0.2,
+      "labels": ["genai-guardrails", "guardrails"]
+    },
+    {
+      "priority": 13,
+      "pillar": "Inference",
+      "name": "vLLM Multimodal",
+      "tier": 3,
+      "tierScore": 0.2,
+      "labels": ["vLLM", "vllm", "vision-transformers"]
+    },
+    {
+      "priority": 14,
+      "pillar": "Data",
+      "name": "AutoML",
+      "tier": 3,
+      "tierScore": 0.2,
+      "labels": []
+    }
+  ]
+}

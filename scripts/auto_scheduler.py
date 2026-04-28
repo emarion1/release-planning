@@ -34,9 +34,11 @@ def auto_schedule_features(features, capacity_guidelines, start_version="3.5", n
 
     def sort_key(f):
         in_plan = f.get("inPlan", f.get("in_plan", False))
+        # Higher priorityScore = higher priority; negate so larger scores sort first
+        priority_score = -(f.get("priorityScore", 0))
         target_date = f.get("targetEndDate", f.get("target_end_date")) or "9999-12-31"
         rank = f.get("rank", 9999)
-        return (not in_plan, target_date, rank)
+        return (not in_plan, priority_score, target_date, rank)
 
     sorted_features = sorted(features, key=sort_key)
 
