@@ -27,7 +27,7 @@ from requests.auth import HTTPBasicAuth
 JIRA_SERVER = os.environ.get("JIRA_SERVER", "https://redhat.atlassian.net")
 JIRA_EMAIL = os.environ.get("JIRA_EMAIL") or os.environ.get("JIRA_USER")
 JIRA_TOKEN = os.environ.get("JIRA_API_TOKEN") or os.environ.get("JIRA_TOKEN")
-FEATURE_INDEX = os.environ.get("FEATURE_INDEX", "data/feature-traffic/RHAISTRAT/latest/index.json")
+FEATURE_INDEX = os.environ.get("FEATURE_INDEX", "data/feature-traffic/latest/index.json")
 OUTPUT = os.environ.get("SUPPLEMENTAL_OUTPUT", "data/supplemental.json")
 BATCH_SIZE = 50
 

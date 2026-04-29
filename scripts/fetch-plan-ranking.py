@@ -32,29 +32,33 @@ OUTPUT = os.environ.get("PLAN_RANKING_OUTPUT", "data/plan-ranking.json")
 
 def fetch_plan_ranking(auth):
     url = f"{JIRA_SERVER}/rest/jpo/1.0/backlog/compact"
-    params = {"planId": PLAN_ID, "scenarioId": SCENARIO_ID}
-    resp = requests.get(url, params=params, auth=auth, timeout=60)
-    resp.raise_for_status()
-    data = resp.json()
+    # Endpoint requires POST with JSON body
+    all_issues = []
+    while True:
+        body = {"planId": int(PLAN_ID), "scenarioId": int(SCENARIO_ID)}
+        if all_issues:
+            body["startAt"] = len(all_issues)
+        resp = requests.post(url, json=body, auth=auth, timeout=60)
+        resp.raise_for_status()
+        data = resp.json()
+        batch = data.get("issues", [])
+        all_issues.extend(batch)
+        if not data.get("more"):
+            break
 
-    # Response shape varies; look for a list of issues with lexoRank
-    issues = (
-        data.get("issueRanks")
-        or data.get("issues")
-        or data.get("data", {}).get("issues", [])
-        or []
-    )
+    # Each issue has a numeric issueKey and a lexoRank inside jiraValues.
+    # Build full key as "RHAISTRAT-{number}" (all items in this plan are RHAISTRAT).
+    ranked = []
+    for issue in all_issues:
+        num = issue.get("issueKey")
+        jira_vals = issue.get("jiraValues", {})
+        lexo = jira_vals.get("lexoRank", "z")
+        excluded = jira_vals.get("excluded", False)
+        if num and not excluded:
+            ranked.append((lexo, f"RHAISTRAT-{num}"))
 
-    # Sort ascending by lexoRank (lower = higher priority)
-    sorted_issues = sorted(issues, key=lambda x: x.get("lexoRank", "z"))
-
-    ranking = {}
-    for rank, issue in enumerate(sorted_issues, 1):
-        key = issue.get("issueKey") or issue.get("key")
-        if key:
-            ranking[key] = rank
-
-    return ranking
+    ranked.sort(key=lambda x: x[0])
+    return {key: i + 1 for i, (_, key) in enumerate(ranked)}
 
 
 def main():

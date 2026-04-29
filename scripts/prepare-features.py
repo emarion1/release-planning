@@ -37,8 +37,8 @@ from fit_predictor_adapter import (
     load_capacity_model,
 )
 
-FEATURE_INDEX = os.environ.get("FEATURE_INDEX", "data/feature-traffic/RHAISTRAT/latest/index.json")
-FEATURE_DIR   = os.environ.get("FEATURE_DIR",   "data/feature-traffic/RHAISTRAT/latest/features")
+FEATURE_INDEX = os.environ.get("FEATURE_INDEX", "data/feature-traffic/latest/index.json")
+FEATURE_DIR   = os.environ.get("FEATURE_DIR",   "data/feature-traffic/latest/features")
 SUPPLEMENTAL  = os.environ.get("SUPPLEMENTAL",  "data/supplemental.json")
 PLAN_RANKING  = os.environ.get("PLAN_RANKING",  "data/plan-ranking.json")
 BIG_ROCKS          = os.environ.get("BIG_ROCKS",          "data/big-rocks.json")
